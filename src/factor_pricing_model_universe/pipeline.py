@@ -1,5 +1,69 @@
+from datetime import datetime
+import logging
+from typing import List, Dict
+
 from numpy import nan
 import pandas as pd
+
+from .utils import to_timestamp
+
+LOGGER = logging.getLogger(__name__)
+
+
+def range_validity(
+    values: List[Dict[str, str]],
+    start_datetime: str | datetime | pd.Timestamp,
+    last_datetime: str | datetime | pd.Timestamp,
+    frequency: str,
+) -> pd.DataFrame:
+    """
+    Include the instrument into universe by the datetime range of validity.
+
+    :param values: The list of instrument including the symbol, valid start
+        datetime and valid last datetime.
+    :type values: `list[dict[str, str]]`
+    :param start_datetime: The universe start datetime.
+    :type start_datetime: `str`, or any type convertible by pandas `Timestamp`.
+    :param last_datetime: The universe last datetime.
+    :type last_datetime: `str`, or any type convertible by pandas `Timestamp`.
+    :param frequency: The frequency string supported in pandas. For further
+        details, please refer to
+        [link](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases)
+    :type frequency: `str`
+    :return: A dataframe indicating whether the instrument is included in
+      the universe.
+    :rtype: `pd.DataFrame`.
+    """
+    start_datetime = to_timestamp(start_datetime)
+    last_datetime = to_timestamp(last_datetime)
+    datetime_range = pd.period_range(
+        start=start_datetime,
+        end=last_datetime,
+        freq=frequency,
+    )
+    default_validity = pd.Series(False, index=datetime_range)
+    universe = {}
+    for value in values:
+        symbol = value["symbol"]
+        valid_start_datetime = to_timestamp(value.get("valid_start_datetime"))
+        valid_last_datetime = to_timestamp(value.get("valid_last_datetime"))
+        if not valid_start_datetime:
+            raise ValueError(f"Missing 'valid_start_datetime' key in value {value}")
+
+        instrument_validity = default_validity.copy()
+        if valid_start_datetime <= start_datetime:
+            valid_start_datetime = start_datetime
+        if valid_last_datetime is None or valid_last_datetime >= last_datetime:
+            valid_last_datetime = last_datetime
+        if valid_start_datetime >= valid_last_datetime:
+            LOGGER.warning(
+                f"No valid range is found between {start_datetime} and {last_datetime} "
+                f"for {symbol}"
+            )
+        instrument_validity.loc[valid_start_datetime:valid_last_datetime] = True
+        universe[symbol] = instrument_validity
+
+    return pd.DataFrame(universe)
 
 
 def ranking(
