@@ -120,4 +120,4 @@ data:
       source: !data prices
       target: !data outstanding_shares
       axis: 0
-```yaml
+```
