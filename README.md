@@ -38,22 +38,86 @@ Install this via pip (or your favourite package manager):
 
 `pip install factor-pricing-model-universe`
 
-## Contributors ✨
+## Usage
 
-Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+The library contains the pipelines to build the universe. You can
+run the pipelines interactively in Jupyter Notebook.
 
-<!-- prettier-ignore-start -->
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- markdownlint-disable -->
-<!-- markdownlint-enable -->
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-<!-- prettier-ignore-end -->
+Alternatively, for scheduled runs, you can create a configuration
+and run the command line entry point to create the universe.
 
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+### Configuration
 
-## Credits
+The configuration is in yaml format.
 
-This package was created with
-[Cookiecutter](https://github.com/audreyr/cookiecutter) and the
-[browniebroke/cookiecutter-pypackage](https://github.com/browniebroke/cookiecutter-pypackage)
-project template.
+For example,
+
+```
+output_filename: ".data/universe/{date}.parquet"
+intermediate_directory: ".data/universe/{date}"
+pipeline:
+  - name: rolling_validity
+    function: rolling_validity
+    parameters:
+      values: !data initial_validity
+      start_datetime: 2015-01-01
+      last_datetime: {date}
+      frequency: "B"
+  - name: ranking
+    function: ranking
+    parameters:
+      values: !marketcap
+      threshold_pct: 0.4
+      tolerance_timeframes: 21
+  - name: rolling_validity
+    function: rolling_validity
+    parameters:
+      values: !data daily_turnover
+      threshold_pct: 0.9
+      rolling_window: 63
+data:
+  initial_validity:
+    function: jq_compile
+    parameters:
+      filename: ".data/universe/{date}/init.json"
+      pattern: ".[] | { symbol: .symbol, valid_start_datetime: .ipoDate, valid_last_datetime: .delistingDate }"
+  prices:
+    function: load_all_data
+    parameters:
+      directory: ".data/prices/{date}"
+      from_format: "csv"
+      to_format: "dataframe"
+  volumes:
+    function: pivot_data
+    parameters:
+      values: !data prices
+      index: "Date"
+      values: "Volume"
+  adjusted_close_prices:
+    function: pivot_data
+    parameters:
+      values: !data prices
+      index: "Date"
+      values: "Close"
+  companies:
+    function: load_all_data
+    parameters:
+      directory: ".data/companies/finnhub/{date}"
+      from_format: "json"
+      to_format: "dict"
+  outstanding_shares:
+    - function: jq_compile
+      parameters:
+        input_json: !data companies
+        pattern: ".[] | { symbol: .ticker, shareOutstanding: .shareOutstanding }"
+    - function: to_series
+      parameters:
+        key: symbol
+        value: shareOutstanding
+  marketcap:
+    function: dataframe_mul
+    parameters:
+      source: !data prices
+      target: !data outstanding_shares
+      axis: 0
+```yaml
