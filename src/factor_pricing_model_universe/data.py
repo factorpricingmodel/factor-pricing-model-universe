@@ -1,13 +1,12 @@
 import csv
+import json
 from enum import Enum
 from functools import partial
-import json
 from os import listdir
 from os.path import join as fsjoin
 from typing import Optional
 
 import jq
-
 import pandas as pd
 
 
@@ -60,7 +59,7 @@ def load_all_data(
     for file_name in file_names:
         key_name = file_name.replace("." + from_format, "")
         path = fsjoin(directory, file_name)
-        with open(path, mode="r") as f:
+        with open(path) as f:
             data = reader(f)
             yield key_name, data
 
@@ -90,7 +89,7 @@ def jq_compile(
     compile = jq.compile(pattern)
 
     if json_filename:
-        with open(json_filename, "r") as f:
+        with open(json_filename) as f:
             json_input = json.load(f)
 
     return compile.input(json_input)

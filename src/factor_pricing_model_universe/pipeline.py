@@ -1,9 +1,9 @@
-from datetime import datetime
 import logging
-from typing import List, Dict
+from datetime import datetime
+from typing import Dict, List
 
-from numpy import nan
 import pandas as pd
+from numpy import nan
 
 from .utils import to_timestamp
 

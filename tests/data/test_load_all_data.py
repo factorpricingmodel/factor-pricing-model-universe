@@ -2,12 +2,10 @@ import json
 import os
 from tempfile import TemporaryDirectory
 
+import pandas as pd
 import pytest
 
-import pandas as pd
-
 from factor_pricing_model_universe.data import load_all_data
-
 
 ################################################################
 # Test prices
