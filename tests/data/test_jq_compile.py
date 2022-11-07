@@ -70,3 +70,12 @@ def test_jq_compile_validity_filename(input_values_filename, expected_results):
     )
 
     assert result.all() == expected_results
+
+
+def test_jq_compile_to_list(input_values, expected_results):
+    result = jq_compile(
+        json_input=input_values,
+        pattern=".[] | .symbol ",
+    )
+
+    assert result.all() == ["A", "ZX"]

@@ -76,6 +76,11 @@ pipeline:
       threshold_pct: 0.9
       rolling_window: 63
 data:
+  initial_symbols:
+    function: jq_compile
+    parameters:
+      filename: ".data/universe/{date}/init.json"
+      pattern: ".[] |  .symbol"
   initial_validity:
     function: jq_compile
     parameters:
@@ -85,24 +90,26 @@ data:
     function: load_all_data
     parameters:
       directory: ".data/prices/{date}"
+      includes: !data initial_symbols
       from_format: "csv"
       to_format: "dataframe"
+      parse_dates: true
+      index_col: "Date"
   volumes:
-    function: pivot_data
+    function: concat
     parameters:
       values: !data prices
-      index: "Date"
-      values: "Volume"
+      column: "Volume"
   adjusted_close_prices:
-    function: pivot_data
+    function: concat
     parameters:
       values: !data prices
-      index: "Date"
-      values: "Close"
+      column: "Close"
   companies:
     function: load_all_data
     parameters:
       directory: ".data/companies/finnhub/{date}"
+      includes: !data initial_symbols
       from_format: "json"
       to_format: "dict"
   outstanding_shares:
@@ -115,9 +122,15 @@ data:
         key: symbol
         value: shareOutstanding
   marketcap:
-    function: dataframe_mul
+    function: dataframe_operator
     parameters:
       source: !data prices
-      target: !data outstanding_shares
-      axis: 0
+      operator: mul
+      parameters:
+        other: !data outstanding_shares
+        axis: 0
 ```
+
+### Development
+
+In general, run `pre-commit run --all-files` before committing.

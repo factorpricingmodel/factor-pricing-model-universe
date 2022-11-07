@@ -4,7 +4,7 @@ from enum import Enum
 from functools import partial
 from os import listdir
 from os.path import join as fsjoin
-from typing import Optional
+from typing import Optional, Dict
 
 import jq
 import pandas as pd
@@ -32,6 +32,7 @@ def load_all_data(
     directory: str,
     from_format: FileFormat,
     to_format: ReturnFormat,
+    index_col: Optional[str] = None,
     parse_dates: Optional[list] = None,
 ):
     """
@@ -50,7 +51,7 @@ def load_all_data(
         if from_format == FileFormat.json:
             reader = partial(pd.read_json, convert_dates=parse_dates)
         elif from_format == FileFormat.csv:
-            reader = partial(pd.read_csv, parse_dates=parse_dates)
+            reader = partial(pd.read_csv, parse_dates=parse_dates, index_col=index_col)
         else:
             raise ValueError(f"Unknown file format: {from_format}")
     else:
@@ -93,3 +94,20 @@ def jq_compile(
             json_input = json.load(f)
 
     return compile.input(json_input)
+
+
+def concat(
+    data: Dict[str, pd.DataFrame],
+    column: str,
+) -> pd.DataFrame:
+    """
+    Concatenate a dict of dataframe into a single dataframe.
+
+    Parameters
+    ----------
+    data: Dict[str, pd.DataFrame]
+        The data frame.
+    column: str
+        The column name in the values of dataframes.
+    """
+    return pd.DataFrame({key: df[column] for key, df in data.items()})

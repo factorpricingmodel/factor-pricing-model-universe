@@ -18,7 +18,7 @@ def prices():
         0.0,
         columns=["Close", "Volume"],
         index=pd.bdate_range("2022-01-01", "2022-01-05", name="Date"),
-    ).reset_index()
+    )
     return {
         "A": default_df,
         "AA": default_df,
@@ -32,7 +32,7 @@ def prices_directory(prices):
         for symbol, price in prices.items():
             filename = f"{symbol}.csv"
             path = os.path.join(tmp_dir, filename)
-            price.to_csv(path, index=False)
+            price.to_csv(path)
         yield tmp_dir
 
 
@@ -42,11 +42,16 @@ def test_load_all_data_from_csv_to_df(prices_directory, prices):
             directory=prices_directory,
             from_format="csv",
             to_format="dataframe",
-            parse_dates=["Date"],
+            parse_dates=True,
+            index_col="Date",
         )
     )
 
     for name, df in result.items():
+        # After loading the data in csv, the frequency information
+        # is lost and it has to convert the frequency to "B" before
+        # assertion
+        df.index.freq = "B"
         pd.testing.assert_frame_equal(
             prices[name],
             df,
