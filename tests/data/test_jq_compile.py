@@ -13,7 +13,7 @@ def input_values():
             "symbol": "A",
             "name": "Agilent Technologies Inc",
             "exchange": "NYSE",
-            "assetType": "Stock",
+            "assetType": ["Stock"],
             "ipoDate": "1999-11-18",
             "delistingDate": "null",
             "status": "Active",
@@ -22,7 +22,7 @@ def input_values():
             "symbol": "ZX",
             "name": "China Zenix Auto International Ltd",
             "exchange": "NYSE",
-            "assetType": "Stock",
+            "assetType": ["Equity"],
             "ipoDate": "2011-05-16",
             "delistingDate": "2018-06-14",
             "status": "Delisted",
@@ -60,7 +60,7 @@ def test_jq_compile_validity_json(input_values, expected_results):
         pattern=".[] | { symbol: .symbol, valid_start_datetime: .ipoDate, valid_last_datetime: .delistingDate }",
     )
 
-    assert result.all() == expected_results
+    assert result == expected_results
 
 
 def test_jq_compile_validity_filename(input_values_filename, expected_results):
@@ -69,13 +69,22 @@ def test_jq_compile_validity_filename(input_values_filename, expected_results):
         pattern=".[] | { symbol: .symbol, valid_start_datetime: .ipoDate, valid_last_datetime: .delistingDate }",
     )
 
-    assert result.all() == expected_results
+    assert result == expected_results
 
 
-def test_jq_compile_to_list(input_values, expected_results):
+def test_jq_compile_to_list(input_values):
     result = jq_compile(
         json_input=input_values,
         pattern=".[] | .symbol ",
     )
 
-    assert result.all() == ["A", "ZX"]
+    assert result == ["A", "ZX"]
+
+
+def test_jq_compile_flatten_list(input_values):
+    result = jq_compile(
+        json_input=input_values,
+        pattern="[.[] | .assetType[]] | sort | unique | .[]",
+    )
+
+    assert result == ["Equity", "Stock"]

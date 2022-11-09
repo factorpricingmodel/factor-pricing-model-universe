@@ -98,9 +98,10 @@ def ranking(
       the universe.
     :rtype: `pd.DataFrame`.
     """
-    assert (
-        0 <= threshold_pct <= 1
-    ), f"Threshold percentage {threshold_pct} must be between 0 and 1"
+    if not (0 <= threshold_pct <= 1):
+        raise ValueError(
+            f"Threshold percentage {threshold_pct} must be between 0 and 1"
+        )
     rank_values = values.rank(axis=1, ascending=False)
     num_instruments = values.notnull().sum(axis=1)
     threshold = num_instruments * threshold_pct

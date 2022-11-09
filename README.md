@@ -76,25 +76,45 @@ pipeline:
       threshold_pct: 0.9
       rolling_window: 63
 data:
-  initial_symbols:
+  dow_jones_symbols:
     function: jq_compile
     parameters:
-      filename: ".data/universe/{date}/init.json"
-      pattern: ".[] |  .symbol"
+      filename: ".data/index/dowjones/financialmodelingprep/{date}.json"
+      pattern: ".[] | .symbol"
+  nasdaq100_symbols:
+    function: jq_compile
+    parameters:
+      filename: ".data/index/nasdaq100/default/{date}.json"
+      pattern: ".[] | .Security Symbol"
+  sp500_symbols:
+    function: jq_compile
+    parameters:
+      filename: ".data/index/sp500/default/{date}.json"
+      pattern: "[.[] | .tickers] | sort | unique | .[]"
+  symbols:
+    function: flatten
+    parameters:
+      values:
+        - dow_jones_symbols
+        - nasdaq100_symbols
+        - sp500_symbols
   initial_validity:
     function: jq_compile
     parameters:
       filename: ".data/universe/{date}/init.json"
       pattern: ".[] | { symbol: .symbol, valid_start_datetime: .ipoDate, valid_last_datetime: .delistingDate }"
+      includes:
+        symbol: !symbols
   prices:
     function: load_all_data
     parameters:
       directory: ".data/prices/{date}"
-      includes: !data initial_symbols
+      includes: !data symbols
       from_format: "csv"
-      to_format: "dataframe"
-      parse_dates: true
-      index_col: "Date"
+      to_format:
+        dataframe:
+          parse_dates: true
+          index_col: "Date"
   volumes:
     function: concat
     parameters:
@@ -109,22 +129,24 @@ data:
     function: load_all_data
     parameters:
       directory: ".data/companies/finnhub/{date}"
-      includes: !data initial_symbols
+      includes: !data symbols
       from_format: "json"
       to_format: "dict"
   outstanding_shares:
-    - function: jq_compile
-      parameters:
-        input_json: !data companies
-        pattern: ".[] | { symbol: .ticker, shareOutstanding: .shareOutstanding }"
-    - function: to_series
-      parameters:
-        key: symbol
-        value: shareOutstanding
+    function: jq_compile
+    parameters:
+      input_json: !data companies
+      pattern: ".[] | { symbol: .ticker, shareOutstanding: .shareOutstanding }"
+      includes:
+        symbol: !symbol
+      to_format:
+        series:
+          index: symbol
+          data: shareOutstanding
   marketcap:
     function: dataframe_operator
     parameters:
-      source: !data prices
+      df: !data prices
       operator: mul
       parameters:
         other: !data outstanding_shares
