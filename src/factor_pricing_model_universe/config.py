@@ -53,7 +53,7 @@ class DelayedDataObject:
     @classmethod
     def update_values(cls, name: str, values: Any) -> None:
         """
-        Update the values in the data mapping.
+        Update the values in the cache.
 
         Parameters
         ----------
@@ -63,6 +63,18 @@ class DelayedDataObject:
             Values of the data object.
         """
         cls._DATA_MAPPING[name] = values
+
+    @classmethod
+    def get_values(cls, name: str) -> Any:
+        """
+        Get the values of the object from the cache.
+
+        Parameters
+        ----------
+        name : str
+            Name of the data object.
+        """
+        return cls._DATA_MAPPING[name]
 
 
 def data_representer(dumper, data):

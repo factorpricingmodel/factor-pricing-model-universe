@@ -42,7 +42,6 @@ def test_data_store(config_text: str):
             "b": func_b,
         },
     )
-    obj_a = data_store.get(name="a")
-    assert obj_a == [1, 2, 3]
     obj_b = data_store.get(name="b")
     assert obj_b == [5, 10, 15]
+    assert DelayedDataObject.get_values("a") == [1, 2, 3]
