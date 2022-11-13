@@ -1,5 +1,5 @@
 import importlib
-from typing import Dict, Any, Optional, Callable, List
+from typing import Any, Callable, Dict, List, Optional
 
 import yaml
 
@@ -67,7 +67,7 @@ class DelayedDataObject:
 
 def data_representer(dumper, data):
     # fmt: off
-    return dumper.represent_scalar(u"!data", u"%s" % data)
+    return dumper.represent_scalar("!data", "%s" % data)
     # fmt: on
 
 
@@ -77,7 +77,7 @@ def data_constructor(loader, node):
 
 
 # fmt: off
-yaml.add_constructor(u"!data", data_constructor)
+yaml.add_constructor("!data", data_constructor)
 # fmt: on
 
 
