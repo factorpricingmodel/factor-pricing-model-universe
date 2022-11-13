@@ -24,6 +24,7 @@ class ReturnFormat(str, Enum):
     Supported return formats.
     """
 
+    default = "default"
     dict = "dict"
     dataframe = "dataframe"
     series = "series"
@@ -118,7 +119,7 @@ def jq_compile(
     if includes:
         result = [item for item in result if _valid(item, includes)]
 
-    if not to_format:
+    if not to_format or to_format == ReturnFormat.default:
         return result
 
     if ReturnFormat.dict == to_format and isinstance(result, dict):
