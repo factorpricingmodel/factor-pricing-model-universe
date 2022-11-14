@@ -1,5 +1,5 @@
 import importlib
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Optional, Iterable, Tuple
 
 import yaml
 
@@ -272,3 +272,88 @@ class DataStore:
             )
 
         return function(**parameters)
+
+
+class PipelineExecutor:
+    def __init__(
+        self,
+        config: Configuration,
+        custom_functions: Optional[Dict[str, Callable]] = None,
+    ):
+        """
+        Parameters:
+        -----------
+        config: Configuration
+            Configuration object.
+        custom_functions: Optional[Dict[str, Callable]]
+            Custom functions of pipelines.
+        """
+        self._config_pipelines = config.pipelines
+        self._custom_functions = custom_functions
+
+    @staticmethod
+    def execute(
+        data_store: DataStore,
+        config: Dict[str, Any],
+        custom_functions: Optional[Dict[str, Callable]] = None,
+    ) -> Any:
+        """
+        Execute a single pipeline.
+
+        Parameters
+        ----------
+        data_store: DataStore
+            Data store to execute the pipeline with.
+        config: Dict[str, Any]
+            Configuration of the pipeline.
+        custom_functions: Optional[Dict[str, Callable]]
+            Custom functions of pipelines.
+        """
+        name = config["name"]
+        function_name = config["function"]
+        parameters = config.get("parameters", {})
+        for param_name, param in parameters.copy().items():
+            if not isinstance(param, DelayedDataObject):
+                continue
+            parameters[param_name] = data_store.get(param_name)
+        data_module = importlib.import_module("factor_pricing_model_universe.pipeline")
+        try:
+            function = getattr(data_module, function_name)
+        except AttributeError:
+            try:
+                function = custom_functions[function_name]
+            except KeyError:
+                raise ValueError(
+                    f"Callable name {function_name} cannot be found "
+                    "neither in the pipeline module nor the customized functions"
+                )
+
+        if function is None:
+            raise RuntimeError(
+                "Failed to catch the exception to locate the "
+                f"function {function_name}"
+            )
+
+        return name, function(**parameters)
+
+    def execute_all(self, data_store: DataStore) -> Dict[str, Any]:
+        """
+        Execute all pipelines.
+
+        Parameters
+        ----------
+        data_store: DataStore
+            Data store to execute the pipeline with.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary of pipeline returns. Keys are the pipeline names
+            and the values are the return values.
+        """
+        for pipeline in self._config_pipelines:
+            yield PipelineExecutor.execute(
+                config=pipeline,
+                data_store=data_store,
+                custom_functions=self._custom_functions,
+            )
