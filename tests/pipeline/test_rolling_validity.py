@@ -5,8 +5,23 @@ import pytest
 from factor_pricing_model_universe.pipeline import rolling_validity
 
 
-@pytest.fixture(scope="module")
-def input_values():
+@pytest.fixture
+def start_datetime():
+    return "2022-11-01"
+
+
+@pytest.fixture
+def last_datetime():
+    return "2022-11-05"
+
+
+@pytest.fixture
+def frequency():
+    return "B"
+
+
+@pytest.fixture
+def input_values(start_datetime, last_datetime):
     return pd.DataFrame(
         [
             [1, 2, np.nan],
@@ -14,16 +29,19 @@ def input_values():
             [np.nan, 8, 9],
             [10, 11, np.nan],
         ],
-        index=pd.bdate_range("2022-11-01", "2022-11-04", name="date"),
+        index=pd.bdate_range(start_datetime, last_datetime, name="datetime"),
         columns=["A", "AAL", "AAPL"],
     )
 
 
-def test_rolling_validity(input_values):
+def test_rolling_validity(input_values, start_datetime, last_datetime, frequency):
     result = rolling_validity(
         values=input_values,
         threshold_pct=0.5,
         rolling_window=2,
+        start_datetime=start_datetime,
+        last_datetime=last_datetime,
+        frequency=frequency,
     )
     expected = pd.DataFrame(
         [

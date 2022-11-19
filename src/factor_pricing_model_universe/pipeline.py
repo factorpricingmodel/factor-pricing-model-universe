@@ -36,10 +36,11 @@ def range_validity(
     """
     start_datetime = to_timestamp(start_datetime)
     last_datetime = to_timestamp(last_datetime)
-    datetime_range = pd.period_range(
+    datetime_range = pd.date_range(
         start=start_datetime,
         end=last_datetime,
         freq=frequency,
+        name="datetime",
     )
     default_validity = pd.Series(False, index=datetime_range)
     universe = {}
@@ -69,7 +70,10 @@ def range_validity(
 def ranking(
     values: pd.DataFrame,
     threshold_pct: float,
-    tolerance_timeframes: int = 21,
+    tolerance_timeframes: int,
+    start_datetime: str | datetime | pd.Timestamp,
+    last_datetime: str | datetime | pd.Timestamp,
+    frequency: str,
 ) -> pd.DataFrame:
     """
     Include the instrument into the universe by ranking.
@@ -94,18 +98,36 @@ def ranking(
       instrument stays in the universe even its values is outside of the
       threshold percentage. Default is 21.
     :type tolerance_timeframes: `int`.
-    :return: A dataframe indicating whether the instrument is included in
-      the universe.
+    :param timeframe_range: Optional. Timeframe range to reindex with the
+      universe.
+    :param start_datetime: The universe start datetime.
+    :type start_datetime: `str`, or any type convertible by pandas `Timestamp`.
+    :param last_datetime: The universe last datetime.
+    :type last_datetime: `str`, or any type convertible by pandas `Timestamp`.
+    :param frequency: The frequency string supported in pandas. For further
+        details, please refer to
+        [link](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases)
+    :type frequency: `str`
     :rtype: `pd.DataFrame`.
     """
     if not (0 <= threshold_pct <= 1):
         raise ValueError(
             f"Threshold percentage {threshold_pct} must be between 0 and 1"
         )
+    datetime_range = pd.date_range(
+        start=start_datetime,
+        end=last_datetime,
+        freq=frequency,
+        name="datetime",
+    )
     rank_values = values.rank(axis=1, ascending=False)
     num_instruments = values.notnull().sum(axis=1)
     threshold = num_instruments * threshold_pct
-    result = rank_values.le(threshold, axis=0).replace(False, nan)
+    result = (
+        rank_values.le(threshold, axis=0)
+        .replace(False, nan)
+        .reindex(index=datetime_range)
+    )
 
     if tolerance_timeframes > 0:
         result = result.ffill(limit=tolerance_timeframes)
@@ -117,6 +139,9 @@ def rolling_validity(
     values: pd.DataFrame,
     threshold_pct: float,
     rolling_window: int,
+    start_datetime: str | datetime | pd.Timestamp,
+    last_datetime: str | datetime | pd.Timestamp,
+    frequency: str,
 ) -> pd.DataFrame:
     """
     Include the instrument into the universe by rolling validity.
@@ -140,9 +165,18 @@ def rolling_validity(
     :type rolling_window: `int`.
     :return: A dataframe indicating whether the instrument is included in
       the universe.
+    :type timeframe_range: pandas.Index
+    :return: A dataframe indicating whether the instrument is included in
+      the universe.
     :rtype: `pd.DataFrame`.
     """
+    datetime_range = pd.date_range(
+        start=start_datetime,
+        end=last_datetime,
+        freq=frequency,
+        name="datetime",
+    )
     return (
         values.notnull().rolling(window=rolling_window, min_periods=1).sum()
         >= threshold_pct * rolling_window
-    )
+    ).reindex(index=datetime_range)

@@ -1,13 +1,13 @@
 import pytest
 
 from factor_pricing_model_universe.config import (
-    PipelineExecutor,
     Configuration,
     DataStore,
+    PipelineExecutor,
 )
 
 
-def pipeline_a(a):
+def pipeline_a(a, **kwargs):
     return a + 1
 
 
@@ -20,6 +20,9 @@ def config_text():
     return """
 output_filename: "output.parquet"
 intermediate_directory: "intermediate/"
+start_datetime: "2020-01-01"
+last_datetime: "2020-01-31"
+frequency: "B"
 pipeline:
     - name: "pipeline_a"
       function: "pipeline_a"
@@ -35,7 +38,8 @@ def test_pipeline_executor_execute(config_text):
     config = Configuration(stream=config_text)
     data_store = DataStore(config=config, custom_functions={"data_a": data_a})
     name, pipeline_result = PipelineExecutor.execute(
-        config=config.pipelines[0],
+        config=config,
+        pipeline=config.pipelines[0],
         data_store=data_store,
         custom_functions={"pipeline_a": pipeline_a},
     )

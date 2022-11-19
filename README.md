@@ -53,8 +53,8 @@ The configuration is in yaml format.
 For example,
 
 ```
-output_filename: ".data/universe/{date}.parquet"
-intermediate_directory: ".data/universe/{date}"
+output_filename: "{output_directory}/universe/{date}.parquet"
+intermediate_directory: "{output_directory}/universe/{date}"
 pipeline:
   - name: rolling_validity
     function: rolling_validity
@@ -79,17 +79,17 @@ data:
   dow_jones_symbols:
     function: jq_compile
     parameters:
-      filename: ".data/index/dowjones/financialmodelingprep/{date}.json"
+      filename: "{data_directory}/index/dowjones/financialmodelingprep/{date}.json"
       pattern: ".[] | .symbol"
   nasdaq100_symbols:
     function: jq_compile
     parameters:
-      filename: ".data/index/nasdaq100/default/{date}.json"
+      filename: "{data_directory}/index/nasdaq100/default/{date}.json"
       pattern: ".[] | .Security Symbol"
   sp500_symbols:
     function: jq_compile
     parameters:
-      filename: ".data/index/sp500/default/{date}.json"
+      filename: "{data_directory}/index/sp500/default/{date}.json"
       pattern: "[.[] | .tickers] | sort | unique | .[]"
   symbols:
     function: flatten
@@ -101,7 +101,7 @@ data:
   initial_validity:
     function: jq_compile
     parameters:
-      filename: ".data/universe/{date}/init.json"
+      filename: "{data_directory}/listing/{date}.json"
       pattern: ".[] | { symbol: .symbol, valid_start_datetime: .ipoDate, valid_last_datetime: .delistingDate }"
       includes:
         symbol: !symbols

@@ -32,13 +32,13 @@ def test_rolling_validity_2010_2022(input_values):
         last_datetime="2022-01-01",
         frequency="B",
     )
-    assert result.shape == (5741, 3)
+    assert result.shape == (5740, 3)
     pd.testing.assert_series_equal(
         result.sum(),
         pd.Series(
             {
-                "A": 5741,
-                "AA": 1360,
+                "A": 5740,
+                "AA": 1359,
                 "ZX": 1849,
             }
         ),
@@ -52,13 +52,13 @@ def test_rolling_validity_2019_2022(input_values):
         last_datetime="2022-01-01",
         frequency="B",
     )
-    assert result.shape == (785, 3)
+    assert result.shape == (784, 3)
     pd.testing.assert_series_equal(
         result.sum(),
         pd.Series(
             {
-                "A": 785,
-                "AA": 785,
+                "A": 784,
+                "AA": 784,
                 "ZX": 0,
             }
         ),

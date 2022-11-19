@@ -1,5 +1,5 @@
 import importlib
-from typing import Any, Callable, Dict, Optional, Iterable, Tuple
+from typing import Any, Callable, Dict, Optional
 
 import yaml
 
@@ -40,6 +40,13 @@ class DelayedDataObject:
             return False
 
         return self._name == other._name
+
+    @property
+    def name(self) -> str:
+        """
+        Return the name of the data object.
+        """
+        return self._name
 
     @property
     def values(self):
@@ -119,6 +126,9 @@ class Configuration:
         self.intermediate_directory = Configuration._get_config(
             self._config, "intermediate_directory"
         )
+        self.start_datetime = Configuration._get_config(self._config, "start_datetime")
+        self.last_datetime = Configuration._get_config(self._config, "last_datetime")
+        self.frequency = Configuration._get_config(self._config, "frequency")
         self.pipelines = Configuration._get_config(self._config, "pipeline")
         self.datas = Configuration._get_config(self._config, "data")
 
@@ -144,7 +154,12 @@ class Configuration:
             return items
 
         if isinstance(items, str):
-            return items.format(**parameters)
+            try:
+                return items.format(**parameters)
+            except KeyError:
+                raise KeyError(
+                    f"Failed to format items {items} with parameters {parameters}"
+                )
         elif isinstance(items, list):
             return [
                 Configuration._resolve_parameters(item, parameters) for item in items
@@ -198,11 +213,26 @@ class DataStore:
         """
         self._config_datas = config.datas
         self._data_store = {
-            name: DelayedDataObject(name=name) for name in config.datas.keys()
+            name: DelayedDataObject(name=f"{id(self)}-{name}")
+            for name in config.datas.keys()
         }
         self._custom_functions = custom_functions
 
-    def get(self, name: str):
+    def update_values(self, name: str, values: Any):
+        """
+        Update the key values.
+
+        Parameters
+        ----------
+        name: string
+            Name of the data object.
+        values: Any
+            Values of the data object.
+        """
+        name = f"{id(self)}-{name}"
+        DelayedDataObject.update_values(name, values)
+
+    def get(self, name: str) -> Any:
         """
         Get a data object.
 
@@ -226,15 +256,30 @@ class DataStore:
             function_name = data_config["function"]
             parameters = {}
             for param_name, parameter in data_config.get("parameters", {}).items():
-                if not isinstance(parameter, DelayedDataObject):
-                    parameters[param_name] = parameter
+                if isinstance(parameter, DelayedDataObject):
+                    try:
+                        parameter_values = parameter.values
+                    except KeyError:
+                        parameter_values = self.get(name=parameter.name)
+                        self.update_values(parameter.name, parameter_values)
+                elif isinstance(parameter, dict):
+                    parameter_values = {
+                        pm: self.get(name=pv.name)
+                        if isinstance(pv, DelayedDataObject)
+                        else pv
+                        for pm, pv in parameter.items()
+                    }
+                elif isinstance(parameter, list):
+                    parameter_values = [
+                        self.get(name=pv.name)
+                        if isinstance(pv, DelayedDataObject)
+                        else pv
+                        for pv in parameter
+                    ]
+                else:
+                    parameter_values = parameter
 
-                try:
-                    parameters[param_name] = parameter.values
-                except KeyError:
-                    parameter_values = self.get(name=param_name)
-                    DelayedDataObject.update_values(param_name, parameter_values)
-                    parameters[param_name] = parameter_values
+                parameters[param_name] = parameter_values
 
             values = self._run_function(
                 function_name=function_name, parameters=parameters
@@ -288,13 +333,14 @@ class PipelineExecutor:
         custom_functions: Optional[Dict[str, Callable]]
             Custom functions of pipelines.
         """
-        self._config_pipelines = config.pipelines
+        self._config = config
         self._custom_functions = custom_functions
 
     @staticmethod
     def execute(
         data_store: DataStore,
-        config: Dict[str, Any],
+        config: Configuration,
+        pipeline: Dict[str, Any],
         custom_functions: Optional[Dict[str, Callable]] = None,
     ) -> Any:
         """
@@ -304,18 +350,20 @@ class PipelineExecutor:
         ----------
         data_store: DataStore
             Data store to execute the pipeline with.
-        config: Dict[str, Any]
-            Configuration of the pipeline.
+        config: Configuration
+            Configuration object.
+        pipeline: Dict[str, Any]
+            Pipeline configuration.
         custom_functions: Optional[Dict[str, Callable]]
             Custom functions of pipelines.
         """
-        name = config["name"]
-        function_name = config["function"]
-        parameters = config.get("parameters", {})
+        name = pipeline["name"]
+        function_name = pipeline["function"]
+        parameters = pipeline.get("parameters", {})
         for param_name, param in parameters.copy().items():
             if not isinstance(param, DelayedDataObject):
                 continue
-            parameters[param_name] = data_store.get(param_name)
+            parameters[param_name] = data_store.get(param.name)
         data_module = importlib.import_module("factor_pricing_model_universe.pipeline")
         try:
             function = getattr(data_module, function_name)
@@ -334,7 +382,12 @@ class PipelineExecutor:
                 f"function {function_name}"
             )
 
-        return name, function(**parameters)
+        return name, function(
+            start_datetime=config.start_datetime,
+            last_datetime=config.last_datetime,
+            frequency=config.frequency,
+            **parameters,
+        )
 
     def execute_all(self, data_store: DataStore) -> Dict[str, Any]:
         """
@@ -351,9 +404,10 @@ class PipelineExecutor:
             Dictionary of pipeline returns. Keys are the pipeline names
             and the values are the return values.
         """
-        for pipeline in self._config_pipelines:
+        for pipeline in self._config.pipelines:
             yield PipelineExecutor.execute(
-                config=pipeline,
+                config=self._config,
+                pipeline=pipeline,
                 data_store=data_store,
                 custom_functions=self._custom_functions,
             )

@@ -1,0 +1,120 @@
+output_filename: "{output_directory}/{date}.parquet"
+intermediate_directory: "{output_directory}/{date}"
+start_datetime: "2015-01-01"
+last_datetime: "{date}"
+frequency: "B"
+pipeline:
+  - name: range_validity
+    function: range_validity
+    parameters:
+      values: !data initial_validity
+  - name: marketcap_ranking
+    function: ranking
+    parameters:
+      values: !data marketcap
+      threshold_pct: 0.5
+      tolerance_timeframes: 21
+  - name: daily_liquidity_validity
+    function: rolling_validity
+    parameters:
+      values: !data volumes
+      threshold_pct: 0.9
+      rolling_window: 63
+data:
+  dow_jones_symbols:
+    function: jq_compile
+    parameters:
+      json_filename: "{data_directory}/index/dowjones/financialmodelingprep/{date}.json"
+      pattern: ".[] | .symbol"
+  nasdaq100_symbols:
+    function: jq_compile
+    parameters:
+      json_filename: "{data_directory}/index/nasdaq100/default/{date}.json"
+      pattern: '.[] | ."Security Symbol"'
+  sp500_symbols:
+    function: jq_compile
+    parameters:
+      json_filename: "{data_directory}/index/sp500/default/{date}.json"
+      pattern: "[.[] | .tickers[]] | sort | unique | .[]"
+  symbols:
+    function: flatten
+    parameters:
+      values:
+        - !data dow_jones_symbols
+        - !data nasdaq100_symbols
+        - !data sp500_symbols
+      ascending: true
+      unique: true
+  initial_validity:
+    function: jq_compile
+    parameters:
+      json_filename: "{data_directory}/listings/{date}.json"
+      pattern: ".[] | {{ symbol: .symbol, valid_start_datetime: .ipoDate, valid_last_datetime: .delistingDate }}"
+      includes:
+        symbol: !data symbols
+  prices:
+    function: load_all_data
+    parameters:
+      directory: "{data_directory}/prices/yfinance/{date}"
+      includes: !data symbols
+      from_format: "csv"
+      to_format:
+        dataframe:
+          index_col: "Date"
+  volumes_raw:
+    function: concat
+    parameters:
+      data: !data prices
+      column: "Volume"
+  volumes:
+    function: convert_str_index_to_date
+    parameters:
+      df: !data volumes_raw
+  adjusted_close_prices_raw:
+    function: concat
+    parameters:
+      data: !data prices
+      column: "Close"
+  adjusted_close_prices:
+    function: convert_str_index_to_date
+    parameters:
+      df: !data adjusted_close_prices_raw
+  companies:
+    function: load_all_data
+    parameters:
+      directory: "{data_directory}/companies/finnhub/{date}"
+      includes: !data symbols
+      from_format: "json"
+      to_format: "dict"
+  outstanding_shares:
+    function: jq_compile
+    parameters:
+      json_input: !data companies
+      pattern: ".[] | {{ symbol: .ticker, shareOutstanding: .shareOutstanding }}"
+      includes:
+        symbol: !data symbols
+      to_format:
+        series:
+          index: symbol
+          data: shareOutstanding
+  outstanding_shares_groupby:
+    function: dataframe_operator
+    parameters:
+      df: !data outstanding_shares
+      operator: groupby
+      parameters:
+        level: 0
+  total_outstanding_shares:
+    function: dataframe_operator
+    parameters:
+      df: !data outstanding_shares_groupby
+      operator: sum
+      parameters: {}
+  marketcap:
+    function: dataframe_operator
+    parameters:
+      df: !data adjusted_close_prices
+      operator: mul
+      parameters:
+        other: !data total_outstanding_shares
+        axis: 1

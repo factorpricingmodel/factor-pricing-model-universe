@@ -41,9 +41,12 @@ def test_load_all_data_from_csv_to_df(prices_directory, prices):
         load_all_data(
             directory=prices_directory,
             from_format="csv",
-            to_format="dataframe",
-            parse_dates=True,
-            index_col="Date",
+            to_format={
+                "dataframe": dict(
+                    parse_dates=True,
+                    index_col="Date",
+                ),
+            },
         )
     )
 

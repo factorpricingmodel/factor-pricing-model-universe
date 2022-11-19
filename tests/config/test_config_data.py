@@ -1,5 +1,3 @@
-from tempfile import NamedTemporaryFile
-
 import pytest
 
 from factor_pricing_model_universe.config import Configuration, DelayedDataObject
@@ -10,6 +8,9 @@ def config_text():
     return """
 output_filename: "{output_directory}/universe/{date}.parquet"
 intermediate_directory: "{output_directory}/universe/{date}/"
+start_datetime: "2020-01-01"
+last_datetime: "2020-01-31"
+frequency: "B"
 pipeline: []
 data:
     a:
