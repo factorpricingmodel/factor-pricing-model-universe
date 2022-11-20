@@ -1,9 +1,10 @@
 from datetime import datetime
+from typing import Optional, Union
 
 from pandas import Timestamp
 
 
-def to_timestamp(value: None | str | datetime | Timestamp) -> Timestamp:
+def to_timestamp(value: Optional[Union[str, datetime, Timestamp]]) -> Timestamp:
     """
     Convert a value to a Timestamp.
 
