@@ -2,9 +2,8 @@ import logging
 from os import makedirs
 from os.path import join as fsjoin
 
-import pandas as pd
-
 import click
+import pandas as pd
 
 from .config import Configuration, DataStore, PipelineExecutor
 
@@ -40,7 +39,7 @@ def main(config, parameter):
     LOGGER.info(f"Parsed parameters: {parsed_parameters}")
 
     LOGGER.info("Loading configuration")
-    with open(config, "r") as fp:
+    with open(config) as fp:
         config = Configuration(stream=fp.read(), parameters=parsed_parameters)
 
     LOGGER.info("Loading data store")

@@ -50,15 +50,15 @@ and run the command line entry point to create the universe.
 
 The configuration is in yaml format and contains a few inputs
 
-| Name | Description |
-|:---:|:---:|
-|`output_filename`|Output filename|
-|`intermediate_directory`|Intermediate directory to export the pipeline outputs|
-|`start_datetime`|Start datetime of the universe|
-|`last_datetime`|Last datetime of the universe|
-|`frequency`|Frequency of the universe. For further details, please see the "Offset aliases" in pandas [documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases)|
-|`pipeline`|List of pipelines to filter the universe|
-|`data`|Defines the data used by pipeline, or referred by yaml tag `!data`|
+|           Name           |                                                                                            Description                                                                                            |
+| :----------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+|    `output_filename`     |                                                                                          Output filename                                                                                          |
+| `intermediate_directory` |                                                                       Intermediate directory to export the pipeline outputs                                                                       |
+|     `start_datetime`     |                                                                                  Start datetime of the universe                                                                                   |
+|     `last_datetime`      |                                                                                   Last datetime of the universe                                                                                   |
+|       `frequency`        | Frequency of the universe. For further details, please see the "Offset aliases" in pandas [documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases) |
+|        `pipeline`        |                                                                             List of pipelines to filter the universe                                                                              |
+|          `data`          |                                                                Defines the data used by pipeline, or referred by yaml tag `!data`                                                                 |
 
 Each pipeline returns a pandas dataframe indicating if the instrument is within the
 universe on the specified date / time. For example, the pipeline returns the following
@@ -88,16 +88,16 @@ in lazy only when it is referred by another data object or a pipeline.
 
 ### Command
 
-The entry point `factor-pricing-model-universe` is to genreate the universe regarding
+The entry point `factor-pricing-model-universe` is to generate the universe regarding
 the given configuration to the destination, with dynamically passing the parameters
 to format the configuration.
 
 The arguments of the entry point are
 
-| Argument | Description |
-|:---:|:---:|
-|`-c, --config TEXT`|Required. Configuration file path.|
-|`-p, --parameter TEXT`|Parameters to be formatted in the configuration.|
+|        Argument        |                   Description                    |
+| :--------------------: | :----------------------------------------------: |
+|  `-c, --config TEXT`   |        Required. Configuration file path.        |
+| `-p, --parameter TEXT` | Parameters to be formatted in the configuration. |
 
 For example, given the configuration as follows,
 

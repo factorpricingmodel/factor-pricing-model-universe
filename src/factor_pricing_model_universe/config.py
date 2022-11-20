@@ -249,10 +249,10 @@ class DataStore:
         try:
             return data_object.values
         except KeyError:
-            assert (
-                name in self._config_datas
-            ), f"Key {name} should be found in configuration"
-            data_config = self._config_datas[name]
+            try:
+                data_config = self._config_datas[name]
+            except KeyError:
+                raise KeyError(f"Key {name} is not found in configuration")
             function_name = data_config["function"]
             parameters = {}
             for param_name, parameter in data_config.get("parameters", {}).items():
