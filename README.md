@@ -48,110 +48,97 @@ and run the command line entry point to create the universe.
 
 ### Configuration
 
-The configuration is in yaml format.
+The configuration is in yaml format and contains a few inputs
 
-For example,
+| Name | Description |
+|:---:|:---:|
+|`output_filename`|Output filename|
+|`intermediate_directory`|Intermediate directory to export the pipeline outputs|
+|`start_datetime`|Start datetime of the universe|
+|`last_datetime`|Last datetime of the universe|
+|`frequency`|Frequency of the universe. For further details, please see the "Offset aliases" in pandas [documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases)|
+|`pipeline`|List of pipelines to filter the universe|
+|`data`|Defines the data used by pipeline, or referred by yaml tag `!data`|
+
+Each pipeline returns a pandas dataframe indicating if the instrument is within the
+universe on the specified date / time. For example, the pipeline returns the following
+dataframe
 
 ```
-output_filename: "{output_directory}/universe/{date}.parquet"
-intermediate_directory: "{output_directory}/universe/{date}"
++------------+--------+-------+
+|    date    |  AAPL  | GOOGL |
++------------+--------+-------+
+| 2022-11-17 |  True  | False |
++------------+--------+-------+
+| 2022-11-18 |  True  |  True |
++------------+--------+-------+
+```
+
+and it indicates AAPL is included in the universe on both 2022-11-17 and 2022-11-18
+while GOOGL only on 2022-11-18.
+
+By default, the pipeline functions are imported from module `factor_pricing_model_universe.pipeline`.
+
+Each data defines the method to retrieve from the source, or the operator on the
+source data. The return type of each data is unconstrained. It can be a json-like dict,
+a list, a pandas series, or even a pandas dataframe.
+
+In the configuration, Each data can be referred by yaml tag `!data`, and it is loaded
+in lazy only when it is referred by another data object or a pipeline.
+
+### Command
+
+The entry point `factor-pricing-model-universe` is to genreate the universe regarding
+the given configuration to the destination, with dynamically passing the parameters
+to format the configuration.
+
+The arguments of the entry point are
+
+| Argument | Description |
+|:---:|:---:|
+|`-c, --config TEXT`|Required. Configuration file path.|
+|`-p, --parameter TEXT`|Parameters to be formatted in the configuration.|
+
+For example, given the configuration as follows,
+
+```
+output_filename: "{output_directory}/{date}.parquet"
+intermediate_directory: "{output_directory}/{date}"
+start_datetime: "2015-01-01"
+last_datetime: "{date}"
+frequency: "B"
 pipeline:
-  - name: rolling_validity
-    function: rolling_validity
+  - name: range_validity
+    function: range_validity
     parameters:
       values: !data initial_validity
-      start_datetime: 2015-01-01
-      last_datetime: {date}
-      frequency: "B"
-  - name: ranking
-    function: ranking
-    parameters:
-      values: !marketcap
-      threshold_pct: 0.4
-      tolerance_timeframes: 21
-  - name: rolling_validity
-    function: rolling_validity
-    parameters:
-      values: !data daily_turnover
-      threshold_pct: 0.9
-      rolling_window: 63
 data:
-  dow_jones_symbols:
-    function: jq_compile
-    parameters:
-      filename: "{data_directory}/index/dowjones/financialmodelingprep/{date}.json"
-      pattern: ".[] | .symbol"
-  nasdaq100_symbols:
-    function: jq_compile
-    parameters:
-      filename: "{data_directory}/index/nasdaq100/default/{date}.json"
-      pattern: ".[] | .Security Symbol"
-  sp500_symbols:
-    function: jq_compile
-    parameters:
-      filename: "{data_directory}/index/sp500/default/{date}.json"
-      pattern: "[.[] | .tickers] | sort | unique | .[]"
   symbols:
-    function: flatten
+    function: jq_compile
     parameters:
-      values:
-        - dow_jones_symbols
-        - nasdaq100_symbols
-        - sp500_symbols
+      json_filename: "{data_directory}/index/sp500/default/{date}.json"
+      pattern: "[.[] | .tickers[]] | sort | unique | .[]"
   initial_validity:
     function: jq_compile
     parameters:
-      filename: "{data_directory}/listing/{date}.json"
-      pattern: ".[] | { symbol: .symbol, valid_start_datetime: .ipoDate, valid_last_datetime: .delistingDate }"
+      json_filename: "{data_directory}/listings/{date}.json"
+      pattern: ".[] | {{ symbol: .symbol, valid_start_datetime: .ipoDate, valid_last_datetime: .delistingDate }}"
       includes:
-        symbol: !symbols
-  prices:
-    function: load_all_data
-    parameters:
-      directory: ".data/prices/{date}"
-      includes: !data symbols
-      from_format: "csv"
-      to_format:
-        dataframe:
-          parse_dates: true
-          index_col: "Date"
-  volumes:
-    function: concat
-    parameters:
-      values: !data prices
-      column: "Volume"
-  adjusted_close_prices:
-    function: concat
-    parameters:
-      values: !data prices
-      column: "Close"
-  companies:
-    function: load_all_data
-    parameters:
-      directory: ".data/companies/finnhub/{date}"
-      includes: !data symbols
-      from_format: "json"
-      to_format: "dict"
-  outstanding_shares:
-    function: jq_compile
-    parameters:
-      input_json: !data companies
-      pattern: ".[] | { symbol: .ticker, shareOutstanding: .shareOutstanding }"
-      includes:
-        symbol: !symbol
-      to_format:
-        series:
-          index: symbol
-          data: shareOutstanding
-  marketcap:
-    function: dataframe_operator
-    parameters:
-      df: !data prices
-      operator: mul
-      parameters:
-        other: !data outstanding_shares
-        axis: 0
+        symbol: !data symbols
 ```
+
+and run the following command
+
+```
+factor-pricing-model-universe \
+  --config <path> \
+  --parameter output_directory=$HOME/output \
+  --parameter data_directory=$HOME/data \
+  --parameter date=2022-10-20
+```
+
+the universe dataframe is output to `$HOME/output/2022-10-20.parquet`
+(formatted with the parameter `output_directory` and `date`).
 
 ### Development
 
