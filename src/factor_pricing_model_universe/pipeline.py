@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import pandas as pd
 from numpy import nan
@@ -12,8 +12,8 @@ LOGGER = logging.getLogger(__name__)
 
 def range_validity(
     values: List[Dict[str, str]],
-    start_datetime: str | datetime | pd.Timestamp,
-    last_datetime: str | datetime | pd.Timestamp,
+    start_datetime: Union[str, datetime, pd.Timestamp],
+    last_datetime: Union[str, datetime, pd.Timestamp],
     frequency: str,
 ) -> pd.DataFrame:
     """
@@ -71,8 +71,8 @@ def ranking(
     values: pd.DataFrame,
     threshold_pct: float,
     tolerance_timeframes: int,
-    start_datetime: str | datetime | pd.Timestamp,
-    last_datetime: str | datetime | pd.Timestamp,
+    start_datetime: Union[str, datetime, pd.Timestamp],
+    last_datetime: Union[str, datetime, pd.Timestamp],
     frequency: str,
 ) -> pd.DataFrame:
     """
@@ -139,8 +139,8 @@ def rolling_validity(
     values: pd.DataFrame,
     threshold_pct: float,
     rolling_window: int,
-    start_datetime: str | datetime | pd.Timestamp,
-    last_datetime: str | datetime | pd.Timestamp,
+    start_datetime: Union[str, datetime, pd.Timestamp],
+    last_datetime: Union[str, datetime, pd.Timestamp],
     frequency: str,
 ) -> pd.DataFrame:
     """
