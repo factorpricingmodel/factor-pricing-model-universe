@@ -30,6 +30,7 @@ author = "Factor Pricing Model"
 extensions = [
     "myst_parser",
     "sphinx.ext.autodoc",
+    "sphinx-press-theme",
 ]
 
 # The suffix of source filenames.
