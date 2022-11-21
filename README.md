@@ -43,6 +43,10 @@ Install this via pip (or your favourite package manager):
 The library contains the pipelines to build the universe. You can
 run the pipelines interactively in Jupyter Notebook.
 
+```python
+from fpm_universe import pipeline
+```
+
 Alternatively, for scheduled runs, you can create a configuration
 and run the command line entry point to create the universe.
 
@@ -60,7 +64,7 @@ The configuration is in yaml format and contains a few inputs
 |        `pipeline`        |                                                                             List of pipelines to filter the universe                                                                              |
 |          `data`          |                                                                Defines the data used by pipeline, or referred by yaml tag `!data`                                                                 |
 
-Each pipeline returns a pandas dataframe indicating if the instrument is within the
+Each pipeline returns a pandas dataframe indicating if the instrument is included into the
 universe on the specified date / time. For example, the pipeline returns the following
 dataframe
 
@@ -139,7 +143,3 @@ factor-pricing-model-universe \
 
 the universe dataframe is output to `$HOME/output/2022-10-20.parquet`
 (formatted with the parameter `output_directory` and `date`).
-
-### Development
-
-In general, run `pre-commit run --all-files` before committing.

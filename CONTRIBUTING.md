@@ -110,6 +110,14 @@ To run a subset of tests:
 $ pytest tests
 ```
 
+Always run styling check
+
+```shell
+pre-commit run --all-files
+```
+
+before committing.
+
 ## Making a new release
 
 The deployment should be automated and can be triggered from the Semantic Release workflow in GitHub. The next version will be based on [the commit logs](https://python-semantic-release.readthedocs.io/en/latest/commit-log-parsing.html#commit-log-parsing). This is done by [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/index.html) via a GitHub action.

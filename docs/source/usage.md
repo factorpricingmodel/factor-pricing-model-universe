@@ -1,9 +1,11 @@
 # Usage
 
-To use this package, import it:
+The library contains the pipelines to build the universe. You can
+run the pipelines interactively in Jupyter Notebook.
 
 ```python
-import fpm_universe
+from fpm_universe import pipeline
 ```
 
-TODO: Document usage
+Alternatively, for scheduled runs, you can create a configuration
+and run the command line entry point to create the universe.

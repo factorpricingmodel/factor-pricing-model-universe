@@ -37,7 +37,7 @@ pyyaml = "^6.0"
 docs = [
     "myst-parser",
     "sphinx",
-    "sphinx-rtd-theme",
+    "sphinx-press-theme",
 ]
 
 [tool.poetry.dev-dependencies]

@@ -1,3 +1,9 @@
 # Changelog
 
-<!--next-version-placeholder-->
+All noteable changes to this project will be documented in this file.
+
+## [Unreleased]
+
+### Added
+
+- Initialisation
