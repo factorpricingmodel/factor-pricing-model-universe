@@ -30,7 +30,7 @@ def main(config, parameter):
     for param in parameter:
         try:
             key, value = param.split("=")
-        except:
+        except ValueError:
             raise click.BadParameter(
                 f"Failed to parse the parameter {parameter} into key-value "
                 "pair. Please pass the parameter in the format of `{key}={value}`"

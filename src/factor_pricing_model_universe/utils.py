@@ -18,5 +18,5 @@ def to_timestamp(value: Optional[Union[str, datetime, Timestamp]]) -> Timestamp:
 
     try:
         return Timestamp(value)
-    except:
+    except ValueError:
         raise ValueError(f"Failed to convert value {value} to Timestamp")
