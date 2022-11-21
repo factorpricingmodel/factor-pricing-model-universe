@@ -30,7 +30,8 @@
   <img src="https://img.shields.io/pypi/l/factor-pricing-model-universe.svg?style=flat-square" alt="License">
 </p>
 
-Package to build universes for factor pricing model
+Package to build universes for factor pricing model. For further details, please refer
+to the [documentation](https://factor-pricing-model-universe.readthedocs.io/en/latest/)
 
 ## Installation
 
