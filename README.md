@@ -77,7 +77,7 @@ dataframe
 and it indicates AAPL is included in the universe on both 2022-11-17 and 2022-11-18
 while GOOGL only on 2022-11-18.
 
-By default, the pipeline functions are imported from module `factor_pricing_model_universe.pipeline`.
+By default, the pipeline functions are imported from module `fpm_universe.pipeline`.
 
 Each data defines the method to retrieve from the source, or the operator on the
 source data. The return type of each data is unconstrained. It can be a json-like dict,

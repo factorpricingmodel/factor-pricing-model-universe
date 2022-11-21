@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from factor_pricing_model_universe.pipeline import ranking
+from fpm_universe.pipeline import ranking
 
 
 @pytest.fixture

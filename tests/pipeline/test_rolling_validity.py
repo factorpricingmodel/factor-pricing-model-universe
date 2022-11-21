@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from factor_pricing_model_universe.pipeline import rolling_validity
+from fpm_universe.pipeline import rolling_validity
 
 
 @pytest.fixture

@@ -298,7 +298,7 @@ class DataStore:
         parameters: Dict[str, Any]
             Parameters to run the function with.
         """
-        data_module = importlib.import_module("factor_pricing_model_universe.data")
+        data_module = importlib.import_module("fpm_universe.data")
         try:
             function = getattr(data_module, function_name)
         except AttributeError:
@@ -364,7 +364,7 @@ class PipelineExecutor:
             if not isinstance(param, DelayedDataObject):
                 continue
             parameters[param_name] = data_store.get(param.name)
-        data_module = importlib.import_module("factor_pricing_model_universe.pipeline")
+        data_module = importlib.import_module("fpm_universe.pipeline")
         try:
             function = getattr(data_module, function_name)
         except AttributeError:

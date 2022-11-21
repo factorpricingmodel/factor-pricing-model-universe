@@ -1,10 +1,6 @@
 import pytest
 
-from factor_pricing_model_universe.config import (
-    Configuration,
-    DataStore,
-    PipelineExecutor,
-)
+from fpm_universe.config import Configuration, DataStore, PipelineExecutor
 
 
 def pipeline_a(a, **kwargs):

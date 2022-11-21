@@ -1,6 +1,6 @@
 import pytest
 
-from factor_pricing_model_universe.config import Configuration, DelayedDataObject
+from fpm_universe.config import Configuration, DelayedDataObject
 
 
 @pytest.fixture

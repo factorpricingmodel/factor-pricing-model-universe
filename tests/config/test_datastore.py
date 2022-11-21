@@ -2,11 +2,7 @@ from typing import Dict, List
 
 import pytest
 
-from factor_pricing_model_universe.config import (
-    Configuration,
-    DataStore,
-    DelayedDataObject,
-)
+from fpm_universe.config import Configuration, DataStore, DelayedDataObject
 
 
 @pytest.fixture

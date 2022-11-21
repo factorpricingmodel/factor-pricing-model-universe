@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from factor_pricing_model_universe.data import concat
+from fpm_universe.data import concat
 
 
 @pytest.fixture

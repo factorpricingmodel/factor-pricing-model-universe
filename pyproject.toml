@@ -15,7 +15,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
 ]
 packages = [
-    { include = "factor_pricing_model_universe", from = "src" },
+    { include = "fpm_universe", from = "src" },
 ]
 
 [tool.poetry.urls]
@@ -51,11 +51,11 @@ docformatter = "^1.5.0"
 [tool.semantic_release]
 branch = "main"
 version_toml = "pyproject.toml:tool.poetry.version"
-version_variable = "src/factor_pricing_model_universe/__init__.py:__version__"
+version_variable = "src/fpm_universe/__init__.py:__version__"
 build_command = "pip install poetry && poetry build"
 
 [tool.pytest.ini_options]
-addopts = "-v -Wdefault --cov=factor_pricing_model_universe --cov-report=term-missing:skip-covered"
+addopts = "-v -Wdefault --cov=fpm_universe --cov-report=term-missing:skip-covered"
 pythonpath = ["src"]
 
 [tool.coverage.run]
@@ -71,7 +71,7 @@ exclude_lines = [
 
 [tool.isort]
 profile = "black"
-known_first_party = ["factor_pricing_model_universe", "tests"]
+known_first_party = ["fpm_universe", "tests"]
 
 [tool.mypy]
 check_untyped_defs = true
@@ -101,4 +101,4 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-factor-pricing-model-universe = 'factor_pricing_model_universe.cli:main'
+factor-pricing-model-universe = 'fpm_universe.cli:main'

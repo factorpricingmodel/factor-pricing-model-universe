@@ -3,7 +3,7 @@ from tempfile import NamedTemporaryFile
 
 import pytest
 
-from factor_pricing_model_universe.data import jq_compile
+from fpm_universe.data import jq_compile
 
 
 @pytest.fixture
