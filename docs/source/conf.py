@@ -30,7 +30,7 @@ author = "Factor Pricing Model"
 extensions = [
     "myst_parser",
     "sphinx.ext.autodoc",
-    "sphinx_press_theme",
+    "sphinxawesome_theme",
 ]
 
 # The suffix of source filenames.
@@ -50,7 +50,8 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "press"
+html_permalinks_icon = "<span>#</span>"
+html_theme = "sphinxawesome_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
