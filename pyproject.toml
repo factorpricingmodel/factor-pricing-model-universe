@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "factor-pricing-model-universe"
-version = "0.0.1"
+version = "2022.1.1"
 description = "Package to build universes for factor pricing model"
 authors = ["Factor Pricing Model <factor.pricing.model@gmail.com>"]
 license = "MIT"
@@ -49,10 +49,11 @@ black = "^22.10.0"
 docformatter = "^1.5.0"
 
 [tool.semantic_release]
-branch = "main"
+branch = "master"
 version_toml = "pyproject.toml:tool.poetry.version"
 version_variable = "src/fpm_universe/__init__.py:__version__"
 build_command = "pip install poetry && poetry build"
+version_source = "tag"
 
 [tool.pytest.ini_options]
 addopts = "-v -Wdefault --cov=fpm_universe --cov-report=term-missing:skip-covered"
