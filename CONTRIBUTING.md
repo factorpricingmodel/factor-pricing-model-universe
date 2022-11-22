@@ -122,4 +122,23 @@ before committing.
 
 The deployment should be automated and can be triggered from the Semantic Release workflow in GitHub. The next version will be based on [the commit logs](https://python-semantic-release.readthedocs.io/en/latest/commit-log-parsing.html#commit-log-parsing). This is done by [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/index.html) via a GitHub action.
 
+Alternatively, the release can be built and distributed manually by poetry, by following
+the following steps
+
+1. Create a new environment and install poetry
+
+```
+virtualenv .env && .env/bin/pip install poetry
+```
+
+2. Update the version in both the setup file `pyproject.toml` and package
+   file `src/fpm_universe/__init__.py`
+
+3. Build the distributions and then publish
+
+```
+rm -rf dist
+.env/bin/poetry build && .env/bin/poetry publish
+```
+
 [gh-issues]: https://github.com/factorpricingmodel/factor-pricing-model-universe/issues
