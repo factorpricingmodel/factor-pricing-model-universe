@@ -23,4 +23,4 @@ jobs:
         env:
           REPOSITORY_PASSWORD: ${{ secrets.REPOSITORY_PASSWORD }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: semantic-release publish --${{ github.event.inputs.release }}
+        run: semantic-release publish --${{ github.event.inputs.release }} -v DEBUG
