@@ -53,7 +53,6 @@ branch = "master"
 version_toml = "pyproject.toml:tool.poetry.version"
 version_variable = "src/fpm_universe/__init__.py:__version__"
 build_command = "pip install poetry && poetry build"
-version_source = "tag"
 
 [tool.pytest.ini_options]
 addopts = "-v -Wdefault --cov=fpm_universe --cov-report=term-missing:skip-covered"
