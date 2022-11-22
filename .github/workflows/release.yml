@@ -1,4 +1,4 @@
-name: release
+name: Release
 
 on:
   workflow_dispatch:
@@ -28,4 +28,4 @@ jobs:
         run: |
           git config --global user.email "factor.pricing.model@gmail.com"
           git config --global user.name "Factor Pricing Model"
-          semantic-release publish --${{ github.event.inputs.release }} -v DEBUG
+          semantic-release publish --${{ github.event.inputs.release }}
