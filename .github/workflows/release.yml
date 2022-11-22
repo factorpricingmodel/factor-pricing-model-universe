@@ -12,17 +12,6 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v3
-        env:
-          REPOSITORY_PASSWORD: ${{ secrets.REPOSITORY_PASSWORD }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        with:
-          branch: master
-
-
       - uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v3
