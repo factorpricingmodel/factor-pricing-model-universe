@@ -4,6 +4,9 @@ All noteable changes to this project will be documented in this file.
 
 <!--next-version-placeholder-->
 
+## v2022.1.4 (2022-11-22)
+
+
 ## v2022.1.3 (2022-11-22)
 ### Documentation
 * Update the contributing doc ([`d6358ef`](https://github.com/factorpricingmodel/factor-pricing-model-universe/commit/d6358ef8f1e3cae0d40f2badf564ac404bca21b8))
