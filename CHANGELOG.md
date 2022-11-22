@@ -4,6 +4,9 @@ All noteable changes to this project will be documented in this file.
 
 <!--next-version-placeholder-->
 
+## v2022.1.8 (2022-11-22)
+
+
 ## v2022.1.5 (2022-11-22)
 
 

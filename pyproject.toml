@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "factor-pricing-model-universe"
-version = "2022.1.7"
+version = "2022.1.8"
 description = "Package to build universes for factor pricing model"
 authors = ["Factor Pricing Model <factor.pricing.model@gmail.com>"]
 license = "MIT"
