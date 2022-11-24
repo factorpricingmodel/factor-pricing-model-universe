@@ -20,7 +20,7 @@ The following parameters are mandatory in the configuration file.
 
 1. US Equities
 
-The configuration [example](https://github.com/factorpricingmodel/factor-pricing-model-universe/blob/master/examples/us_equities.yaml) returns
+The configuration [example](https://github.com/factorpricingmodel/factor-pricing-model-universe/blob/main/examples/us_equities.yaml) returns
 an universe of US equities from the top marketcap and liquidity stocks
 from the three major indexes (S&P, NASDAQ and DJ500).
 
@@ -31,4 +31,4 @@ The period is between 2015-01-01 and 2022-10-20 and the selection pipelines are
 - Daily liquidity validity: Select the stocks trading actively in the exchange for 90%
   of time in the past 63 business days
 
-The output result is stored as parquet format and exported in the [link](https://raw.githubusercontent.com/factorpricingmodel/factor-pricing-model-universe/master/examples/us_equities.parquet)
+The output result is stored as parquet format and exported in the [link](https://raw.githubusercontent.com/factorpricingmodel/factor-pricing-model-universe/main/examples/us_equities.parquet)
