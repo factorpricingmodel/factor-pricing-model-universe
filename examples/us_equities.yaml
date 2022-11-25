@@ -30,12 +30,12 @@ data:
     function: jq_compile
     parameters:
       json_filename: "{data_directory}/index/nasdaq100/default/{date}.json"
-      pattern: '.[] | ."Security Symbol"'
+      pattern: '.[] | .constituents | .[] | ."Security Symbol"'
   sp500_symbols:
     function: jq_compile
     parameters:
       json_filename: "{data_directory}/index/sp500/default/{date}.json"
-      pattern: "[.[] | .tickers[]] | sort | unique | .[]"
+      pattern: ".[] | .tickers[]"
   symbols:
     function: flatten
     parameters:

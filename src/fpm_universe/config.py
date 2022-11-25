@@ -218,6 +218,16 @@ class DataStore:
         }
         self._custom_functions = custom_functions
 
+    def items(self):
+        """
+        Iterate the items in the data store.
+
+        Returns
+        -------
+        Iterator like a dictionary.
+        """
+        yield from self._data_store.items()
+
     def update_values(self, name: str, values: Any):
         """
         Update the key values.
@@ -284,7 +294,7 @@ class DataStore:
             values = self._run_function(
                 function_name=function_name, parameters=parameters
             )
-            DelayedDataObject.update_values(name, values)
+            self.update_values(name, values)
             return values
 
     def _run_function(self, function_name: str, parameters: Dict[str, Any]) -> Any:

@@ -62,6 +62,17 @@ def main(config, parameter):
         else:
             final_result &= result
 
-    LOGGER.info("Exporting the final pipeline results")
+    LOGGER.info(
+        f"Exporting the data to intermediate directory {config.intermediate_directory}"
+    )
+    for name, obj in data_store.items():
+        if isinstance(obj.values, pd.DataFrame):
+            path = fsjoin(config.intermediate_directory, f"{obj.name}.parquet")
+            LOGGER.info(f"Exporting data {obj.name} to {path}")
+            obj.values.to_parquet(path)
+
+    LOGGER.info(
+        f"Exporting the final pipeline results to output filename {config.output_filename}"
+    )
     final_result.to_parquet(config.output_filename)
     LOGGER.info("Completed")
