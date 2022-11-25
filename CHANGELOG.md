@@ -4,6 +4,15 @@ All noteable changes to this project will be documented in this file.
 
 <!--next-version-placeholder-->
 
+## v2022.2.0 (2022-11-25)
+### Feature
+* Add parameter tolerance_timeframes in rolling validity pipeline ([`7a18a9f`](https://github.com/factorpricingmodel/factor-pricing-model-universe/commit/7a18a9f3097d25f8f6b890edb3c11c287c82ea3c))
+* Export dependent data to the intermediate directory ([`e3c6350`](https://github.com/factorpricingmodel/factor-pricing-model-universe/commit/e3c6350b3ce71111ccb88d8598ce3237b7f50477))
+
+### Documentation
+* Update the example US equities universe ([`9da491e`](https://github.com/factorpricingmodel/factor-pricing-model-universe/commit/9da491e175e24c74678084a3a9c3260c65737c4b))
+* Add US equities output into examples ([`bf4a895`](https://github.com/factorpricingmodel/factor-pricing-model-universe/commit/bf4a895b2a7fd6e4b131339ea71b42713eb450f9))
+
 ## v2022.1.8 (2022-11-22)
 
 
