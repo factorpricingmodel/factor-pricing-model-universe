@@ -2,7 +2,7 @@ from typing import Dict, List
 
 import pytest
 
-from fpm_universe.config import Configuration, DataStore, DelayedDataObject
+from fpm_universe.config import Configuration, DataStore
 
 
 @pytest.fixture
@@ -45,4 +45,3 @@ def test_data_store(config_text: str):
     )
     obj_b = data_store.get(name="b")
     assert obj_b == [5, 10, 15, 2, 4, 6]
-    assert DelayedDataObject.get_values("a") == [1, 2, 3]
