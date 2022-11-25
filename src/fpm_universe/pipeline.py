@@ -98,8 +98,6 @@ def ranking(
       instrument stays in the universe even its values is outside of the
       threshold percentage. Default is 21.
     :type tolerance_timeframes: `int`.
-    :param timeframe_range: Optional. Timeframe range to reindex with the
-      universe.
     :param start_datetime: The universe start datetime.
     :type start_datetime: `str`, or any type convertible by pandas `Timestamp`.
     :param last_datetime: The universe last datetime.
@@ -139,6 +137,7 @@ def rolling_validity(
     values: pd.DataFrame,
     threshold_pct: float,
     rolling_window: int,
+    tolerance_timeframes: int,
     start_datetime: Union[str, datetime, pd.Timestamp],
     last_datetime: Union[str, datetime, pd.Timestamp],
     frequency: str,
@@ -165,9 +164,18 @@ def rolling_validity(
     :type rolling_window: `int`.
     :return: A dataframe indicating whether the instrument is included in
       the universe.
-    :type timeframe_range: pandas.Index
-    :return: A dataframe indicating whether the instrument is included in
-      the universe.
+    :param tolerance_timeframes: The number of timeframes to allow the
+      instrument stays in the universe even its values is outside of the
+      threshold percentage. Default is 21.
+    :type tolerance_timeframes: `int`.
+    :param start_datetime: The universe start datetime.
+    :type start_datetime: `str`, or any type convertible by pandas `Timestamp`.
+    :param last_datetime: The universe last datetime.
+    :type last_datetime: `str`, or any type convertible by pandas `Timestamp`.
+    :param frequency: The frequency string supported in pandas. For further
+        details, please refer to
+        [link](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases)
+    :type frequency: `str`
     :rtype: `pd.DataFrame`.
     """
     datetime_range = pd.date_range(
@@ -176,7 +184,12 @@ def rolling_validity(
         freq=frequency,
         name="datetime",
     )
-    return (
+    result = (
         values.notnull().rolling(window=rolling_window, min_periods=1).sum()
         >= threshold_pct * rolling_window
     ).reindex(index=datetime_range)
+
+    if tolerance_timeframes > 0:
+        result = result.ffill(limit=tolerance_timeframes)
+
+    return result

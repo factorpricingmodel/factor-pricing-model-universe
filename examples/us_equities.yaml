@@ -20,6 +20,7 @@ pipeline:
       values: !data volumes
       threshold_pct: 0.9
       rolling_window: 63
+      tolerance_timeframes: 5
 data:
   dow_jones_symbols:
     function: jq_compile

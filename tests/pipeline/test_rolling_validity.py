@@ -39,6 +39,7 @@ def test_rolling_validity(input_values, start_datetime, last_datetime, frequency
         values=input_values,
         threshold_pct=0.5,
         rolling_window=2,
+        tolerance_timeframes=0,
         start_datetime=start_datetime,
         last_datetime=last_datetime,
         frequency=frequency,
