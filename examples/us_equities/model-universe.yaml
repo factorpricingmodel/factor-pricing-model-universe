@@ -1,0 +1,62 @@
+metadata:
+  output:
+    directory: "{output_directory}/model-universe"
+definitions:
+  parameters: &parameters
+    start_datetime: "2015-01-01"
+    last_datetime: "{date}"
+    frequency: "B"
+  output-parquet: &output-parquet
+    format: "parquet"
+    dump-caller: "object.to_parquet"
+    load-caller: "pandas:read_parquet"
+task:
+  initial-validity:
+    output:
+      directory: "{output_directory}/xs_data"
+      format: "json"
+  marketcap:
+    output:
+      directory: "{output_directory}/xs_data"
+      <<: *output-parquet
+  volume:
+    output:
+      directory: "{output_directory}/xs_data"
+      <<: *output-parquet
+  range-validity:
+    caller: fpm_universe.pipeline:range_validity
+    parameters:
+      values: !data initial-validity
+      <<: *parameters
+    output:
+      <<: *output-parquet
+      directory: "{output_directory}/model-universe/intermediate"
+  marketcap-ranking:
+    caller: fpm_universe.pipeline:ranking
+    parameters:
+      values: !data marketcap
+      threshold_pct: 0.9
+      tolerance_timeframes: 21
+      <<: *parameters
+    output:
+      <<: *output-parquet
+      directory: "{output_directory}/model-universe/intermediate"
+  daily-liquidity-validity:
+    caller: fpm_universe.pipeline:rolling_validity
+    parameters:
+      values: !data volume
+      threshold_pct: 0.9
+      rolling_window: 63
+      tolerance_timeframes: 5
+      <<: *parameters
+    output:
+      <<: *output-parquet
+      directory: "{output_directory}/model-universe/intermediate"
+  validity:
+    caller: fpm_universe.pipeline:combine_validity
+    parameters:
+      - !data range-validity
+      - !data marketcap-ranking
+      - !data daily-liquidity-validity
+    output:
+      <<: *output-parquet
