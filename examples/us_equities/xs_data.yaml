@@ -1,0 +1,144 @@
+metadata:
+  output:
+    directory: "{output_directory}/xs_data"
+definitions:
+  output-cache: &output-cache
+    directory: null
+  output-parquet: &output-parquet
+    format: "parquet"
+    dump-caller: "object.to_parquet"
+    load-caller: "pandas:read_parquet"
+task:
+  dow-jones-symbols-external:
+    output:
+      directory: "{data_directory}/index/dowjones/financialmodelingprep"
+      name: "{date}"
+      format: "json"
+  nasdaq100-symbols-external:
+    output:
+      directory: "{data_directory}/index/nasdaq100/default"
+      name: "{date}"
+      format: "json"
+  sp500-symbols-external:
+    output:
+      directory: "{data_directory}/index/sp500/default"
+      name: "{date}"
+      format: "json"
+  initial-validity-external:
+    output:
+      directory: "{data_directory}/listings"
+      name: "{date}"
+      format: "json"
+  dow-jones-symbols:
+    caller: fpm_universe.data:jq_compile
+    parameters:
+      json_input: !data dow-jones-symbols-external
+      pattern: ".[] | .symbol"
+    output: *output-cache
+  nasdaq100-symbols:
+    caller: fpm_universe.data:jq_compile
+    parameters:
+      json_input: !data nasdaq100-symbols-external
+      pattern: '.[] | .constituents | .[] | ."Security Symbol"'
+    output: *output-cache
+  sp500-symbols:
+    caller: fpm_universe.data:jq_compile
+    parameters:
+      json_input: !data sp500-symbols-external
+      pattern: ".[] | .tickers[]"
+    output: *output-cache
+  symbols:
+    caller: fpm_universe.data:flatten
+    parameters:
+      values:
+        - !data dow-jones-symbols
+        - !data nasdaq100-symbols
+        - !data sp500-symbols
+      ascending: true
+      unique: true
+    output: *output-cache
+  initial-validity:
+    caller: fpm_universe.data:jq_compile
+    parameters:
+      json_input: !data initial-validity-external
+      pattern: ".[] | {{ symbol: .symbol, valid_start_datetime: .ipoDate, valid_last_datetime: .delistingDate }}"
+      includes:
+        symbol: !data symbols
+    output:
+      format: "json"
+  prices:
+    caller: fpm_universe.data:load_all_data
+    parameters:
+      directory: "{data_directory}/prices/yfinance/{date}"
+      includes: !data symbols
+      from_format: "csv"
+      to_format:
+        dataframe:
+          index_col: "Date"
+    output: *output-cache
+  volume-raw:
+    caller: fpm_universe.data:concat
+    parameters:
+      data: !data prices
+      column: "Volume"
+    output: *output-cache
+  volume:
+    caller: fpm_universe.data:convert_str_index_to_date
+    parameters:
+      df: !data volume-raw
+    output: *output-parquet
+  adjusted-close-raw:
+    caller: fpm_universe.data:concat
+    parameters:
+      data: !data prices
+      column: "Close"
+    output: *output-cache
+  adjusted-close:
+    caller: fpm_universe.data:convert_str_index_to_date
+    parameters:
+      df: !data adjusted-close-raw
+    output: *output-parquet
+  companies:
+    caller: fpm_universe.data:load_all_data
+    parameters:
+      directory: "{data_directory}/companies/finnhub/{date}"
+      includes: !data symbols
+      from_format: "json"
+      to_format: "dict"
+    output: *output-cache
+  outstanding-shares:
+    caller: fpm_universe.data:jq_compile
+    parameters:
+      json_input: !data companies
+      pattern: ".[] | {{ symbol: .ticker, shareOutstanding: .shareOutstanding }}"
+      includes:
+        symbol: !data symbols
+      to_format:
+        series:
+          index: symbol
+          data: shareOutstanding
+    output: *output-cache
+  outstanding-shares-groupby:
+    caller: fpm_universe.data:dataframe_operator
+    parameters:
+      df: !data outstanding-shares
+      operator: groupby
+      parameters:
+        level: 0
+    output: *output-cache
+  total-outstanding-shares:
+    caller: fpm_universe.data:dataframe_operator
+    parameters:
+      df: !data outstanding-shares-groupby
+      operator: sum
+      parameters: {}
+    output: *output-cache
+  marketcap:
+    caller: fpm_universe.data:dataframe_operator
+    parameters:
+      df: !data adjusted-close
+      operator: mul
+      parameters:
+        other: !data total-outstanding-shares
+        axis: 1
+    output: *output-parquet

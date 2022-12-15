@@ -193,3 +193,24 @@ def rolling_validity(
         result = result.ffill(limit=tolerance_timeframes)
 
     return result
+
+
+def combine_validity(*args: List[pd.DataFrame]) -> pd.DataFrame:
+    """
+    Combine validity.
+
+    Parameters
+    ----------
+    args : List[pd.DataFrame]
+      List of validity dataframes, each of which is produced by
+      a single pipeline.
+    """
+    final_validity = None
+
+    for validity in args:
+        if final_validity is None:
+            final_validity = validity
+        else:
+            final_validity &= validity
+
+    return final_validity
