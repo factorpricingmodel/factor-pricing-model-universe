@@ -4,6 +4,14 @@ All noteable changes to this project will be documented in this file.
 
 <!--next-version-placeholder-->
 
+## v2023.0.0 (2023-01-03)
+### Feature
+* Support pipelines for prefect-yaml ([`588755a`](https://github.com/factorpricingmodel/factor-pricing-model-universe/commit/588755a4727639aae7cbf2294adce7bcd8c799c8))
+
+### Documentation
+* Add model universe example ([`f849d84`](https://github.com/factorpricingmodel/factor-pricing-model-universe/commit/f849d84d6e64b3ea23fb7554ce16a8dd631a69dd))
+* Add model universe example configuration ([`9027641`](https://github.com/factorpricingmodel/factor-pricing-model-universe/commit/9027641f0fdc224a427d40d380b53203bec573c2))
+
 ## v2022.2.0 (2022-11-25)
 ### Feature
 * Add parameter tolerance_timeframes in rolling validity pipeline ([`7a18a9f`](https://github.com/factorpricingmodel/factor-pricing-model-universe/commit/7a18a9f3097d25f8f6b890edb3c11c287c82ea3c))
