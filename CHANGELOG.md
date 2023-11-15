@@ -4,6 +4,12 @@ All noteable changes to this project will be documented in this file.
 
 <!--next-version-placeholder-->
 
+## v2024.0.0 (2023-11-15)
+
+### Feature
+
+* Add rolling correlation rank validity ([`b2fef9b`](https://github.com/factorpricingmodel/factor-pricing-model-universe/commit/b2fef9b142be16e5b94be5405fc4d8832ba1c35e))
+
 ## v2023.0.0 (2023-01-03)
 ### Feature
 * Support pipelines for prefect-yaml ([`588755a`](https://github.com/factorpricingmodel/factor-pricing-model-universe/commit/588755a4727639aae7cbf2294adce7bcd8c799c8))
