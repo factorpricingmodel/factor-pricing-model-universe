@@ -214,3 +214,79 @@ def combine_validity(*args: List[pd.DataFrame]) -> pd.DataFrame:
             final_validity &= validity
 
     return final_validity
+
+
+def rolling_correlation_rank_validity(
+    values: pd.DataFrame,
+    rankings: pd.DataFrame,
+    rolling_window: int,
+    threshold: float,
+    start_datetime: Union[str, datetime, pd.Timestamp],
+    last_datetime: Union[str, datetime, pd.Timestamp],
+    frequency: str,
+) -> pd.DataFrame:
+    """
+    Exclude instruments if the correlations are too high and only the higher
+    ranked instruments are selected.
+
+    :param values: The values to compare with their correlations, e.g. returns.
+      The columns are instruments, and the index are in datetime.
+    :type values: class:`pandas.DataFrame`.
+    :param rankings: The rankings are sorted in cross sectional rank. The
+      columns are instruments, and the index are in datetime.
+    :type rankings: class:`pandas.DataFrame`.
+    :param rolling_window: The number of rolling timeframes that in the
+      past the values exist. The number must be non-negaive.
+    :type rolling_window: `int`.
+    :param threshold: The threshold correlation which should be between
+      0 and 1.
+    :type threshold: `float`.
+    :param start_datetime: The universe start datetime.
+    :type start_datetime: `str`, or any type convertible by pandas `Timestamp`.
+    :param last_datetime: The universe last datetime.
+    :type last_datetime: `str`, or any type convertible by pandas `Timestamp`.
+    :param frequency: The frequency string supported in pandas. For further
+        details, please refer to
+        [link](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases)
+    :type frequency: `str`.
+    :return: A dataframe indicating whether the instrument is included in
+      the universe.
+    :rtype: `pd.DataFrame`.
+    """
+
+    def _validity(
+        t_ranks,
+        t_values,
+        threshold_pct,
+    ):
+        if t_ranks.isnull().all():
+            return pd.Series(nan, index=t_ranks.index)
+        t_ranks = t_ranks.sort_values()
+        t_validity = t_ranks.notnull()
+        t_ranks = {index: r for r, index in enumerate(t_ranks.index)}
+        t_corr = t_values.loc[:, t_validity].corr().stack()
+        cp_t_ranks = t_corr.index.get_level_values(0).map(
+            t_ranks
+        ) < t_corr.index.get_level_values(1).map(t_ranks)
+        too_correlated = t_corr.loc[cp_t_ranks & (t_corr.abs() > threshold_pct)]
+        too_correlated_index = list(set(too_correlated.index.get_level_values(1)))
+        t_validity[too_correlated_index] = False
+        return t_validity
+
+    datetime_range = pd.date_range(
+        start=start_datetime,
+        end=last_datetime,
+        freq=frequency,
+        name="datetime",
+    )
+    start_window_datetime_range = datetime_range.shift(-rolling_window)
+    validity = {}
+    for i in range(len(datetime_range)):
+        st = start_window_datetime_range[i]
+        et = datetime_range[i]
+        validity[et] = _validity(
+            t_ranks=rankings.loc[et],
+            t_values=values.loc[st:et],
+            threshold_pct=threshold,
+        )
+    return pd.concat(validity, axis=1).T
